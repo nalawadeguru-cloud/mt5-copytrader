@@ -7,7 +7,7 @@ import os
 
 app = FastAPI()
 
-# ---- पाथ कॉन्फिगरेशन (Render सर्व्हरसाठी अत्यंत महत्त्वाचे) ----
+# ---- पाथ कॉन्फिगरेशन ----
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 DB_PATH = os.path.join(BASE_DIR, "database.db")
@@ -27,7 +27,6 @@ def init_db():
     conn.commit()
     conn.close()
 
-# ॲप्लिकेशन सुरू होताच डेटाबेस टेबल तयार होईल
 init_db()
 
 # ---- होम पेज (डॅशबोर्ड UI) ----
@@ -40,7 +39,6 @@ async def home(request: Request):
         accounts = cursor.fetchall()
         conn.close()
         
-        # Jinja2 च्या नवीन व्हर्जननुसार अचूक फॉरमॅट
         return templates.TemplateResponse(
             request=request, 
             name="index.html", 
@@ -67,28 +65,111 @@ async def add_account(
         conn.close()
         return RedirectResponse(url="/", status_code=303)
     except Exception as e:
-        return HTMLResponse(content=f"<h3>डेटा सेव्ह करताना एरर आली: {str(e)}</h3>", status_code=500)
+        return HTMLResponse(content=f"<h3>एरर आली: {str(e)}</h3>", status_code=500)
 
-# ---- कोअर कॉपी ट्रेडिंग इंजिन (बॅकग्राउंड लूप) ----
+# 🚀 ---- कोअर रिअल-टाइम कॉपी ट्रेडिंग इंजिन ----
 async def start_copy_engine():
     try:
         from metaapi_cloud_sdk import MetaApi
         
-        # ⚠️ तुमचा MetaAPI चा टोकन इथे टाका
-        API_TOKEN = "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiJkYTYwM2ZlYTEyNjMyYjFjNDNjZWRiZjYyZTYwYWY0ZCIsImFjY2Vzc1J1bGVzIjpbeyJpZCI6InRyYWRpbmctYWNjb3VudC1tYW5hZ2VtZW50LWFwaSIsIm1ldGhvZHMiOlsidHJhZGluZy1hY2NvdW50LW1hbmFnZW1lbnQtYXBpOnJlc3Q6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiLCJ3cml0ZXIiXSwicmVzb3VyY2VzIjpbIio6JFVTRVJfSUQkOioiXX0seyJpZCI6Im1ldGFhcGktcmVzdC1hcGkiLCJtZXRob2RzIjpbIm1ldGFhcGktYXBpOnJlc3Q6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiLCJ3cml0ZXIiXSwicmVzb3VyY2VzIjpbIio6JFVTRVJfSUQkOioiXX0seyJpZCI6Im1ldGFhcGktcnBjLWFwaSIsIm1ldGhvZHMiOlsibWV0YWFwaS1hcGk6d3M6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiLCJ3cml0ZXIiXSwicmVzb3VyY2VzIjpbIio6JFVTRVJfSUQkOioiXX0seyJpZCI6Im1ldGFhcGktcmVhbC10aW1lLXN0cmVhbWluZy1hcGkiLCJtZXRob2RzIjpbIm1ldGFhcGktYXBpOndzOnB1YmxpYzoqOioiXSwicm9sZXMiOlsicmVhZGVyIiwid3JpdGVyIl0sInJlc291cmNlcyI6WyIqOiRVU0VSX0lEJDoqIl19LHsiaWQiOiJtZXRhc3RhdHMtYXBpIiwibWV0aG9kcyI6WyJtZXRhc3RhdHMtYXBpOnJlc3Q6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiLCJ3cml0ZXIiXSwicmVzb3VyY2VzIjpbIio6JFVTRVJfSUQkOioiXX0seyJpZCI6InJpc2stbWFuYWdlbWVudC1hcGkiLCJtZXRob2RzIjpbInJpc2stbWFuYWdlbWVudC1hcGk6cmVzdDpwdWJsaWM6KjoqIl0sInJvbGVzIjpbInJlYWRlciIsIndyaXRlciJdLCJyZXNvdXJjZXMiOlsiKjokVVNFUl9JRCQ6KiJdfSx7ImlkIjoiY29weWZhY3RvcnktYXBpIiwibWV0aG9kcyI6WyJjb3B5ZmFjdG9yeS1hcGk6cmVzdDpwdWJsaWM6KjoqIl0sInJvbGVzIjpbInJlYWRlciIsIndyaXRlciJdLCJyZXNvdXJjZXMiOlsiKjokVVNFUl9JRCQ6KiJdfSx7ImlkIjoibXQtbWFuYWdlci1hcGkiLCJtZXRob2RzIjpbIm10LW1hbmFnZXItYXBpOnJlc3Q6ZGVhbGluZzoqOioiLCJtdC1tYW5hZ2VyLWFwaTpyZXN0OnB1YmxpYzoqOioiXSwicm9sZXMiOlsicmVhZGVyIiwid3JpdGVyIl0sInJlc291cmNlcyI6WyIqOiRVU0VSX0lEJDoqIl19LHsiaWQiOiJiaWxsaW5nLWFwaSIsIm1ldGhvZHMiOlsiYmlsbGluZy1hcGk6cmVzdDpwdWJsaWM6KjoqIl0sInJvbGVzIjpbInJlYWRlciJdLCJyZXNvdXJjZXMiOlsiKjokVVNFUl9JRCQ6KiJdfV0sImlnbm9yZVJhdGVMaW1pdHMiOmZhbHNlLCJ0b2tlbklkIjoiMjAyMTAyMTMiLCJpbXBlcnNvbmF0ZWQiOmZhbHNlLCJyZWFsVXNlcklkIjoiZGE2MDNmZWExMjYzMmIxYzQzY2VkYmY2MmU2MGFmNGQiLCJpYXQiOjE3ODA5NzY2NDd9.Y9pKwO4B9D8wTjrEQpiYgGzd3rZq51ii9HcjCxy5XRlj35a-gTXB49F9b5gyBszlnW7rOHRgvIh40Tq3yXccDd_nJHXGCa9LX3KZiX620ITuYBiyYnt8YwxF0U2LW61zU9QDlMtLwgOrv-7LPFLfYf4duc9T-blL2nuN15lsN77pfWUtYfTq9dORZ6fqFXUE66WVmao05hMcF_FKoxrRxDavwESw5iN896EzOCVc_1BOh1OU_xmS-R1fa3vS6zmDu8-nS07osHH0K3PE7cdw6bHmnP2nVCW22yanGqFHG4ryAYKO0JSXvssZ6Fs5jnk5fH5JC21ewe6_JFa7YcQTSLz7o65IT9MsfPA4IyuPcbOFsI4aLl5-SuxeYW7LurPErso1r9ATFIKnl_n1sXDcaYkSIuLPmJdAsfROoKvN9n_S2nNI2kLzvJlqJjjb_hii7QZ5yB00-S5zJ6mrJH59bf6kGhmlptTV1ra4nb1UbcZv45LBsjOue8xEOQm5pZw5DigjYVbYpH5VIY9mTauf9Z1uatmRy1Cew8gDenKv6pYuvR86Arj6RoAYhmn3h3aoCAPzAudjLxEh_MalldvYvErmga1w5VbmToo4jkTDwfQntNf8NzYOerSRqWJfxIwDzx5PWfSBKc94ZRX5a3832pURKkzrKlD2hmWU7NxP4q4" 
+        # ⚠️ तुमचा खरा MetaAPI टोकन इथे पेस्ट करा
+        API_TOKEN = "YOUR_METAAPI_TOKEN_HERE" 
         api = MetaApi(token=API_TOKEN)
         
-        print("🚀 कॉपी ट्रेडिंग इंजिन बॅकग्राउंडमध्ये यशस्वीरीत्या ॲक्टिव्ह झाले आहे...")
-        
-        while True:
-            # इथे तुमची ट्रेड कॉपी करण्याची मुख्य लॉजिक रन होईल
-            await asyncio.sleep(10)
-            
-    except Exception as e:
-        print(f"❌ कॉपी इंजिनमध्ये एरर आली: {e}")
+        print("🚀 कॉपी ट्रेडिंग इंजिन बॅकग्राउंडमध्ये ॲक्टिव्ह झाले आहे...")
 
-# ---- ॲप्लिकेशन स्टार्टअप इव्हेंट ----
+        # १. डेटाबेसमधून मास्टर आणि फॉलोवर डिटेल्स लोड करणे
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT user_type, metaapi_account_id, multiplier FROM accounts")
+        rows = cursor.fetchall()
+        conn.close()
+
+        master_id = None
+        followers = []
+
+        for row in rows:
+            if row[0].lower() == 'master':
+                master_id = row[1]
+            else:
+                followers.append({'id': row[1], 'multiplier': row[2]})
+
+        if not master_id:
+            print("⏳ वाट पाहत आहे... डॅशबोर्डवर अजून 'Master Account' जोडलेला नाही.")
+            return
+
+        print(f"📡 मास्टर अकाऊंट {master_id} शी कनेक्ट होत आहे...")
+        master_account = await api.metatrader_account_api.get_account(master_id)
+        await master_account.wait_connected()
+        
+        master_connection = master_account.get_streaming_connection()
+        await master_connection.connect()
+        await master_connection.wait_synchronized()
+
+        # २. फॉलोवर अकाऊंट्सचे कनेक्शन बॅकग्राउंडमध्ये तयार ठेवणे
+        follower_connections = {}
+        for f in followers:
+            try:
+                print(f"📡 फॉलोवर अकाऊंट {f['id']} कनेक्ट करत आहे...")
+                f_account = await api.metatrader_account_api.get_account(f['id'])
+                await f_account.wait_connected()
+                f_conn = f_account.get_streaming_connection()
+                await f_conn.connect()
+                await f_conn.wait_synchronized()
+                follower_connections[f['id']] = {"connection": f_conn, "multiplier": f['multiplier']}
+            except Exception as fe:
+                print(f"❌ फॉलोवर {f['id']} कनेक्ट होऊ शकला नाही: {fe}")
+
+        # ३. मास्टर अकाऊंटवरील ट्रेड्स ट्रॅक करण्यासाठी सिंक्रोनाइझेशन लिसनर
+        class TradeCopyListener:
+            async def on_positions_synchronized(self, instance_index, synchronization_id):
+                # मास्टरवरील सध्याच्या सर्व ओपन पोझिशन्स वाचणे
+                master_positions = master_connection.terminal_state.positions
+                
+                for pos in master_positions:
+                    symbol = pos.get('symbol')
+                    position_type = pos.get('type') # 'POSITION_TYPE_BUY' किंवा 'POSITION_TYPE_SELL'
+                    volume = pos.get('volume', 0)
+                    
+                    print(f"🔔 मास्टरवर अॅक्टिव्ह ट्रेड: {symbol} | Type: {position_type} | Volume: {volume}")
+                    
+                    # प्रत्येक फॉलोवरवर हा ट्रेड कॉपी करणे
+                    for f_id, f_data in follower_connections.items():
+                        try:
+                            f_conn = f_data["connection"]
+                            mult = f_data["multiplier"]
+                            
+                            # फॉलोवरवर आधीच हा ट्रेड सुरू आहे का ते तपासणे (डबल ट्रेड टाळण्यासाठी)
+                            follower_positions = f_conn.terminal_state.positions
+                            already_exists = any(p.get('symbol') == symbol and p.get('type') == position_type for p in follower_positions)
+                            
+                            if not already_exists:
+                                # मल्टिप्लायरनुसार लॉट साईझ ठरवणे
+                                target_volume = round(volume * mult, 2)
+                                if target_volume < 0.01:
+                                    target_volume = 0.01
+                                
+                                # मार्केट ऑर्डर टाईप सेट करणे
+                                order_type = 'ORDER_TYPE_BUY' if position_type == 'POSITION_TYPE_BUY' else 'ORDER_TYPE_SELL'
+                                
+                                print(f"➡️ फॉलोवर {f_id} वर ट्रेड कॉपी केला जात आहे: Size {target_volume}")
+                                await f_conn.create_market_order(symbol, order_type, target_volume)
+                        except Exception as copy_err:
+                            print(f"❌ फॉलोवर {f_id} वर ऑर्डर टाकताना एरर: {copy_err}")
+
+        master_connection.add_synchronization_listener(TradeCopyListener())
+        
+        # सिस्टीम २४/७ चालू ठेवण्यासाठी लूप
+        while True:
+            await asyncio.sleep(1)
+
+    except Exception as e:
+        print(f"❌ कॉपी ट्रेडिंग इंजिनमध्ये एरर: {e}")
+        await asyncio.sleep(15)
+        # एरर आल्यास ऑटो-रिस्टार्ट
+        asyncio.create_task(start_copy_engine())
+
+# ---- स्टार्टअप इव्हेंट ----
 @app.on_event("startup")
 async def startup_event():
-    # सर्व्हर सुरू होताच कॉपी ट्रेडिंगचे इंजिन बॅकग्राउंडमध्ये धावणे सुरू होईल
     asyncio.create_task(start_copy_engine())
