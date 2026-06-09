@@ -1,60 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Login - CopyTrader</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body {
-            background: #0f172a;
-            color: #f8fafc;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .login-card {
-            background: rgba(30, 41, 59, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            padding: 30px;
-            width: 100%;
-            max-width: 400px;
-            backdrop-filter: blur(12px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-            text-align: center;
-        }
-        .logo i { font-size: 2.5rem; color: #38bdf8; margin-bottom: 10px; }
-        h2 { font-size: 1.4rem; font-weight: 600; margin-bottom: 20px; color: #f1f5f9; }
-        .form-group { margin-bottom: 20px; text-align: left; }
-        label { display: block; color: #94a3b8; font-size: 0.75rem; font-weight: 600; margin-bottom: 6px; text-transform: uppercase; }
-        .form-control { width: 100%; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 12px; color: white; outline: none; font-size: 1rem; text-align: center; letter-spacing: 4px; transition: 0.3s; }
-        .form-control:focus { border-color: #38bdf8; }
-        .btn-login { width: 100%; background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%); color: white; padding: 12px; border: none; border-radius: 10px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: 0.3s; }
-        .btn-login:hover { transform: translateY(-1px); box-shadow: 0 5px 15px rgba(56, 189, 248, 0.3); }
-        .error-msg { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); padding: 10px; border-radius: 8px; font-size: 0.8rem; margin-bottom: 15px; }
-    </style>
-</head>
+<html>
 <body>
-    <div class="login-card">
-        <div class="logo"><i class="fa-solid fa-shield-halved"></i></div>
-        <h2>Terminal Access Login</h2>
-        
-        {% if error %}
-            <div class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> {{ error }}</div>
-        {% endif %}
-
-        <form action="/verify-pin" method="post">
-            <div class="form-group">
-                <label>Security PIN Code</label>
-                <input type="password" name="pin" class="form-control" placeholder="••••" maxlength="4" required autocomplete="off" autofocus>
-            </div>
-            <button type="submit" class="btn-login">Verify & Unlock</button>
-        </form>
-    </div>
+    <h2>Secure Login</h2>
+    {% if error %}<p style="color:red">{{ error }}</p>{% endif %}
+    <form action="/verify-pin" method="post">
+        <input type="password" name="pin" placeholder="Enter PIN" required>
+        <button type="submit">Login</button>
+    </form>
 </body>
 </html>
