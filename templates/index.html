@@ -2,9 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MT5 CopyTrader Ultra Dashboard</title>
-    <!-- Google Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -14,71 +13,82 @@
         body { 
             background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.9) 100%), 
                         url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=1920&auto=format&fit=crop') no-repeat center center fixed;
-            background-size: cover; color: #f8fafc; padding: 20px; min-height: 100vh;
+            background-size: cover; color: #f8fafc; padding: 10px; min-height: 100vh;
         }
         
-        .container { max-width: 1400px; margin: 0 auto; padding: 10px; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 5px; }
         
+        /* 📱 मोबाईल रेडी हेडर */
         .header { 
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; 
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; 
             background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px;
-            padding: 15px 25px; backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            padding: 12px 20px; backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
-        .brand-box h1 { color: #38bdf8; font-size: 1.6rem; display: flex; align-items: center; gap: 12px; font-weight: 700; text-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
+        .brand-box h1 { color: #38bdf8; font-size: 1.2rem; display: flex; align-items: center; gap: 8px; font-weight: 700; }
+        @media(min-width: 600px) { .brand-box h1 { font-size: 1.6rem; } }
         
-        .user-profile { display: flex; align-items: center; gap: 15px; }
+        .user-profile { display: flex; align-items: center; gap: 12px; }
         .user-info { text-align: right; }
-        .user-name { font-size: 0.95rem; font-weight: 600; color: #f1f5f9; }
-        .user-role { font-size: 0.75rem; color: #34d399; font-weight: 500; display: flex; align-items: center; gap: 4px; justify-content: flex-end; }
+        .user-name { font-size: 0.85rem; font-weight: 600; color: #f1f5f9; }
+        .user-role { font-size: 0.7rem; color: #34d399; font-weight: 500; display: flex; align-items: center; gap: 4px; justify-content: flex-end; }
         
-        .btn-logout { background: rgba(239, 68, 68, 0.15); color: #f87171; padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(239, 68, 68, 0.3); text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: 0.3s; }
-        .btn-logout:hover { background: #ef4444; color: white; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
+        .btn-logout { background: rgba(239, 68, 68, 0.15); color: #f87171; padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(239, 68, 68, 0.3); text-decoration: none; font-size: 0.8rem; font-weight: 600; transition: 0.3s; }
+        .btn-logout:hover { background: #ef4444; color: white; }
 
-        .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .status-card { background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 18px; display: flex; align-items: center; gap: 15px; backdrop-filter: blur(10px); }
-        .icon-box { width: 45px; height: 45px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+        /* 📱 मोबाईल आणि डेस्कटॉपसाठी परफेक्ट २-कॉलम आकडेवारी ग्रीड */
+        .status-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 12px; 
+            margin-bottom: 20px; 
+        }
+        @media(max-width: 480px) {
+            .status-grid { grid-template-columns: 1fr; } 
+        }
+        
+        .status-card { background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px; display: flex; align-items: center; gap: 10px; backdrop-filter: blur(10px); }
+        .icon-box { width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
         .icon-blue { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
         .icon-green { background: rgba(52, 211, 153, 0.15); color: #34d399; }
-        .status-info p { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
-        .status-info h2 { font-size: 1.3rem; font-weight: 600; color: #f8fafc; }
+        .status-info p { font-size: 0.65rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+        .status-info h2 { font-size: 0.95rem; font-weight: 600; color: #f8fafc; white-space: nowrap; }
 
-        /* विस्तृत लेआउट ग्रिड */
-        .main-grid { display: grid; grid-template-columns: 1fr; gap: 25px; }
+        .main-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
         @media (min-width: 1100px) { .main-grid { grid-template-columns: 3.8fr 8.2fr; } }
         
-        .card { background: rgba(30, 41, 59, 0.55); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 25px; backdrop-filter: blur(14px); box-shadow: 0 15px 35px rgba(0,0,0,0.35); }
-        h3 { color: #f1f5f9; margin-bottom: 20px; font-weight: 600; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; }
+        .card { background: rgba(30, 41, 59, 0.55); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 18px; backdrop-filter: blur(14px); box-shadow: 0 15px 35px rgba(0,0,0,0.35); }
+        h3 { color: #f1f5f9; margin-bottom: 15px; font-weight: 600; font-size: 1rem; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
         h3 i { color: #38bdf8; }
         
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; color: #94a3b8; font-size: 0.75rem; font-weight: 600; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.3px; }
-        .form-control { width: 100%; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 11px; color: white; outline: none; font-size: 0.88rem; transition: 0.3s; }
-        .form-control:focus { border-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); background: rgba(15, 23, 42, 0.85); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; color: #94a3b8; font-size: 0.7rem; font-weight: 600; margin-bottom: 4px; text-transform: uppercase; }
+        .form-control { width: 100%; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 10px; color: white; outline: none; font-size: 0.85rem; transition: 0.3s; }
+        .form-control:focus { border-color: #38bdf8; background: rgba(15, 23, 42, 0.85); }
         select.form-control option { background: #1e293b; color: white; }
         
-        .btn-submit { width: 100%; background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%); color: white; padding: 14px; border: none; border-radius: 10px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: 0.3s; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(56, 189, 248, 0.4); }
+        .btn-submit { width: 100%; background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%); color: white; padding: 12px; border: none; border-radius: 10px; font-weight: 600; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
+        .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 5px 15px rgba(56, 189, 248, 0.3); }
 
-        /* 📊 प्रगत डेटा टेबल */
-        .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: separate; border-spacing: 0 8px; margin-top: -8px; }
-        th { padding: 12px 10px; color: #64748b; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; text-align: left; letter-spacing: 0.5px; }
-        td { padding: 12px 10px; background: rgba(15, 23, 42, 0.6); border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem; }
+        /* 📊 मोबाईलवर टेबल सुरक्षित स्क्रोल होण्यासाठी कंटेनर */
+        .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: -8px; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0 8px; min-width: 750px; } 
+        th { padding: 10px; color: #64748b; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; text-align: left; }
+        td { padding: 12px 10px; background: rgba(15, 23, 42, 0.6); border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.82rem; }
         tr td:first-child { border-left: 1px solid rgba(255,255,255,0.05); border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
         tr td:last-child { border-right: 1px solid rgba(255,255,255,0.05); border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
         
-        .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 600; display: inline-block; }
+        .badge { padding: 4px 6px; border-radius: 6px; font-size: 0.65rem; font-weight: 600; }
         .badge-master { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25); }
         .badge-follower { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.25); }
         
         .txt-profit { color: #34d399; font-weight: 600; font-family: monospace; }
         .txt-loss { color: #f87171; font-weight: 600; font-family: monospace; }
-        .symbol-badge { background: rgba(56, 189, 248, 0.08); padding: 3px 8px; border-radius: 6px; font-family: monospace; font-size: 0.78rem; color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.15); }
-        .info-notice { background: rgba(234, 179, 8, 0.1); color: #fde047; border: 1px solid rgba(234, 179, 8, 0.2); padding: 10px 12px; border-radius: 8px; font-size: 0.75rem; margin-bottom: 15px; display: flex; gap: 8px; line-height: 1.4; }
+        .symbol-badge { background: rgba(56, 189, 248, 0.08); padding: 3px 6px; border-radius: 6px; font-family: monospace; font-size: 0.75rem; color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.15); }
+        .info-notice { background: rgba(234, 179, 8, 0.1); color: #fde047; border: 1px solid rgba(234, 179, 8, 0.2); padding: 10px; border-radius: 8px; font-size: 0.72rem; margin-bottom: 12px; display: flex; gap: 6px; }
         
-        .meta-id { font-family: monospace; color: #64748b; font-size: 0.75rem; display: block; margin-top: 2px; }
-        .sub-txt { font-size: 0.75rem; color: #64748b; display: block; }
+        .meta-id { font-family: monospace; color: #64748b; font-size: 0.7rem; display: block; margin-top: 2px; }
+        .sub-txt { font-size: 0.7rem; color: #64748b; display: block; }
     </style>
 </head>
 <body>
@@ -93,7 +103,6 @@
     {% endif %}
 
     <div class="container">
-        <!-- हेडर -->
         <div class="header">
             <div class="brand-box">
                 <h1><i class="fa-solid fa-bolt-lightning"></i> CopyTrader Ultra</h1>
@@ -101,59 +110,54 @@
             <div class="user-profile">
                 <div class="user-info">
                     <div class="user-name">Guruprasad Nalawade</div>
-                    <div class="user-role"><span class="status-dot" style="width:8px; height:8px; background:#34d399; border-radius:50%; display:inline-block; box-shadow:0 0 8px #34d399;"></span> Administrator</div>
+                    <div class="user-role"><span style="width:6px; height:6px; background:#34d399; border-radius:50%; display:inline-block; box-shadow:0 0 6px #34d399;"></span> Admin</div>
                 </div>
                 <a href="/logout" class="btn-logout"><i class="fa-solid fa-power-off"></i></a>
             </div>
         </div>
 
-        <!-- आकडेवारी कार्ड्स -->
         <div class="status-grid">
             <div class="status-card">
                 <div class="icon-box icon-blue"><i class="fa-solid fa-network-wired"></i></div>
                 <div class="status-info">
                     <p>Engine Core</p>
-                    <h2>Multi-Sync Live</h2>
+                    <h2>Multi-Live</h2>
                 </div>
             </div>
             <div class="status-card">
                 <div class="icon-box icon-green"><i class="fa-solid fa-wallet"></i></div>
                 <div class="status-info">
-                    <p>Connected Terminals</p>
+                    <p>Terminals</p>
                     <h2>{% if accounts %}{{ accounts|length }}{% else %}0{% endif %} Active</h2>
                 </div>
             </div>
         </div>
 
         <div class="main-grid">
-            
-            <!-- डावी बाजू: सर्वसमावेशक इनपुट फॉर्म -->
             <div class="card">
-                <h3><i class="fa-solid fa-circle-plus"></i> Secure Terminal Deployment</h3>
+                <h3><i class="fa-solid fa-circle-plus"></i> Secure Deployment</h3>
                 
                 {% if has_master %}
                     <div class="info-notice">
-                        <i class="fa-solid fa-circle-info" style="margin-top: 3px;"></i>
-                        <span>मुख्य <strong>Master Account</strong> जोडलेले आहे. आता नवीन फॉलोअर्स सुरक्षितपणे कॉन्फिगर करा.</span>
+                        <i class="fa-solid fa-circle-info" style="margin-top: 2px;"></i>
+                        <span>Master जोडलेले आहे. फॉलोअर्स सुरक्षितपणे कॉन्फिगर करा.</span>
                     </div>
                 {% endif %}
 
                 <form action="/add-account" method="post">
-                    
                     <div class="form-group">
                         <label><i class="fa-solid fa-user"></i> Customer Name</label>
                         <input type="text" name="account_name" class="form-control" placeholder="उदा. विक्रम जांभळे" required autocomplete="off">
                     </div>
 
-                    <!-- नवीन जोडलेले दोन इनपुट रकाने एकाच ओळीत (ब्रोकर आणि लॉगिन नंबर) -->
                     <div class="form-row">
                         <div class="form-group">
                             <label><i class="fa-solid fa-building-columns"></i> Broker Name</label>
-                            <input type="text" name="broker_name" class="form-control" placeholder="उदा. Exness / XM" required autocomplete="off">
+                            <input type="text" name="broker_name" class="form-control" placeholder="Exness / XM" required autocomplete="off">
                         </div>
                         <div class="form-group">
                             <label><i class="fa-solid fa-hashtag"></i> MT5 Login ID</label>
-                            <input type="text" name="mt5_login" class="form-control" placeholder="उदा. 6589321" required autocomplete="off">
+                            <input type="text" name="mt5_login" class="form-control" placeholder="6589321" required autocomplete="off">
                         </div>
                     </div>
 
@@ -161,9 +165,9 @@
                         <label><i class="fa-solid fa-sliders"></i> Account Type</label>
                         <select name="user_type" class="form-control" required>
                             {% if not has_master %}
-                                <option value="Master">Master Account (सिग्नल प्रदाता)</option>
+                                <option value="Master">Master Account</option>
                             {% endif %}
-                            <option value="Follower" selected>Follower Account (कॉपी ट्रेडिंग)</option>
+                            <option value="Follower" selected>Follower Account</option>
                         </select>
                     </div>
 
@@ -172,7 +176,6 @@
                         <input type="text" name="metaapi_account_id" class="form-control" placeholder="metaapi-uuid-here..." required autocomplete="off">
                     </div>
 
-                    <!-- नवीन जोडलेले दोन इनपुट रकाने एकाच ओळीत (मल्टिप्लायर आणि मॅक्स रिस्क) -->
                     <div class="form-row">
                         <div class="form-group">
                             <label><i class="fa-solid fa-calculator"></i> Multiplier</label>
@@ -190,9 +193,8 @@
                 </form>
             </div>
 
-            <!-- उजवी बाजू: सर्व माहिती देणारे अद्ययावत टेबल -->
             <div class="card">
-                <h3><i class="fa-solid fa-table-list"></i> Real-Time Terminal Fleet Control</h3>
+                <h3><i class="fa-solid fa-table-list"></i> Fleet Control</h3>
                 
                 <div class="table-container">
                 {% if accounts %}
@@ -211,12 +213,10 @@
                         <tbody>
                             {% for acc in accounts %}
                                 <tr>
-                                    <!-- १. कस्टमर नाव आणि खाली आयडी -->
                                     <td>
                                         <span style="font-weight: 600; color: #f1f5f9;">{{ acc[4] }}</span>
                                         <span class="meta-id">ID: {{ acc[2][:8] }}...</span>
                                     </td>
-                                    <!-- २. टाईप -->
                                     <td>
                                         {% if acc[1].lower() == 'master' %}
                                             <span class="badge badge-master"><i class="fa-solid fa-crown"></i> Master</span>
@@ -224,44 +224,38 @@
                                             <span class="badge badge-follower"><i class="fa-solid fa-user-gear"></i> Follower</span>
                                         {% endif %}
                                     </td>
-                                    <!-- ३. ब्रोकर आणि एमटी५ लॉगिन आयडी -->
                                     <td>
                                         <span style="color: #cbd5e1; font-weight: 500;">{{ acc[5] }}</span>
                                         <span class="sub-txt">Acc: {{ acc[6] }}</span>
                                     </td>
-                                    <!-- ४. इक्विटी -->
                                     <td style="font-family: monospace; color: #cbd5e1; font-weight: 500;">
                                         ${{ "{:,.2f}".format(acc[8]) }}
                                     </td>
-                                    <!-- ५. लाईव्ह पीएनएल -->
                                     <td class="{% if acc[9] >= 0 %}txt-profit{% else %}txt-loss{% endif %}">
                                         {% if acc[9] >= 0 %}+{% endif %}${{ "{:,.2f}".format(acc[9]) }}
                                     </td>
-                                    <!-- ६. रनिंग सिम्बॉल -->
                                     <td>
                                         <span class="symbol-badge">
-                                            <i class="fa-solid fa-chart-line" style="font-size: 0.7rem; margin-right: 3px;"></i>
+                                            <i class="fa-solid fa-chart-line" style="font-size: 0.65rem; margin-right: 2px;"></i>
                                             {{ acc[10] }}
                                         </span>
                                     </td>
-                                    <!-- ७. मल्टिप्लायर आणि कमाल रिस्क मर्यादा -->
                                     <td style="text-align: center;">
                                         <span style="color: #38bdf8; font-weight: 700; display: block;">{{ acc[3] }}x</span>
-                                        <span style="color: #ef4444; font-size: 0.72rem; font-weight: 500;">Limit: {{ acc[7] }}%</span>
+                                        <span style="color: #ef4444; font-size: 0.68rem; font-weight: 500;">Limit: {{ acc[7] }}%</span>
                                     </td>
                                 </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 {% else %}
-                    <div style="text-align: center; padding: 50px 0; color: #475569;">
-                        <i class="fa-solid fa-folder-open" style="font-size: 2.5rem; margin-bottom: 12px; color: #475569;"></i>
-                        <p style="font-size: 0.9rem; color: #94a3b8;">कोणतीही सिस्टीम अद्याप जोडलेली नाही.</p>
+                    <div style="text-align: center; padding: 40px 0; color: #475569;">
+                        <i class="fa-solid fa-folder-open" style="font-size: 2.5rem; margin-bottom: 12px;"></i>
+                        <p style="font-size: 0.9rem; color: #94a3b8;">कोणतीही सिस्टीम जोडलेली नाही.</p>
                     </div>
                 {% endif %}
                 </div>
             </div>
-
         </div>
     </div>
 
