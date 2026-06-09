@@ -20,7 +20,7 @@ running_engine_id = 0
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    # 📊 सर्व नवीन इनपुट आणि मॅट्रिक्स कॉलम्ससह टेबल तयार करणे
+    # 📊 सर्व आवश्यक इनपुट्स आणि लाईव्ह मॅट्रिक्ससह टेबल तयार करणे
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS accounts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,7 +37,7 @@ def init_db():
         )
     """)
     
-    # जुन्या डेटाबेसमध्ये नवीन कॉलम सुरक्षितपणे जोडणे
+    # जुन्या डेटाबेसमध्ये नवीन कॉलम सुरक्षितपणे जोडण्यासाठी सेफ्टी चेक्स
     columns_to_add = [
         ("account_name", "TEXT DEFAULT 'Unnamed'"),
         ("broker_name", "TEXT DEFAULT 'Unknown'"),
@@ -60,7 +60,8 @@ init_db()
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request, error: str = ""):
-    return templates.TemplateResponse(request=request, name="login.html", context={"error": error})
+    # 💻 फिक्स: नवीन FastAPI व्हर्जननुसार सिस्टिमॅटिक आर्गुमेंट्स पास केले आहेत
+    return templates.TemplateResponse("login.html", {"request": request, "error": error})
 
 @app.post("/verify-pin")
 async def verify_pin(pin: str = Form(...)):
@@ -86,11 +87,12 @@ async def home(request: Request):
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        # सर्व माहिती डेटाबेसमधून काढणे
+        # सर्व आवश्यक माहिती डेटाबेसमधून ओढणे
         cursor.execute("SELECT id, user_type, metaapi_account_id, multiplier, account_name, broker_name, mt5_login, max_risk, equity, pnl, current_symbol FROM accounts")
         accounts = cursor.fetchall()
         conn.close()
-        return templates.TemplateResponse(request=request, name="index.html", context={"accounts": accounts})
+        # 💻 फिक्स: होम पेजसाठी योग्य रीतीने टेम्पलेट रिस्पॉन्स
+        return templates.TemplateResponse("index.html", {"request": request, "accounts": accounts})
     except Exception as e:
         return HTMLResponse(content=f"<h3>Database Error: {str(e)}</h3>", status_code=500)
 
@@ -178,14 +180,14 @@ async def start_copy_engine(engine_id: int):
             except Exception as fe:
                 print(f"❌ Follower [{f['id']}] Connection Error: {fe}")
 
-        # 🔄 रिअल-टाइम लाइव्ह डेटा सिंक टास्क (प्रत्येक २ सेकंदाला)
+        # 🔄 बॅकग्राउंड टास्क: प्रत्येक २ सेकंदाला लाईव्ह डेटाबेस अपडेट करणे
         async def update_account_metrics():
             while engine_id == running_engine_id:
                 try:
                     conn = sqlite3.connect(DB_PATH)
                     cursor = conn.cursor()
                     
-                    # मास्टर डेटा अपडेट
+                    # १. मास्टर अकाऊंट लाईव्ह आकडेवारी
                     m_state = master_connection.terminal_state
                     m_equity = m_state.account_information.get('equity', 0.0)
                     m_pnl = m_state.account_information.get('profit', 0.0)
@@ -194,7 +196,7 @@ async def start_copy_engine(engine_id: int):
                     
                     cursor.execute("UPDATE accounts SET equity=?, pnl=?, current_symbol=? WHERE user_type='Master'", (m_equity, m_pnl, m_sym))
                     
-                    # फॉलोअर्स डेटा अपडेट
+                    # २. सर्व फॉलोअर्सची लाईव्ह आकडेवारी
                     for f_id, f_data in follower_objects.items():
                         f_state = f_data["connection"].terminal_state
                         f_equity = f_state.account_information.get('equity', 0.0)
@@ -212,7 +214,7 @@ async def start_copy_engine(engine_id: int):
 
         asyncio.create_task(update_account_metrics())
 
-        # 👑 ट्रेड कॉपी करण्याचे मूळ लॉजिक (With Risk Guard)
+        # 👑 ट्रेड कॉपी करण्याचे मूळ लॉजिक (With Advanced Risk Guard)
         class TradeCopyListener:
             async def on_positions_synchronized(self, instance_index, synchronization_id):
                 if engine_id != running_engine_id: return
@@ -227,7 +229,7 @@ async def start_copy_engine(engine_id: int):
                     
                     for f_id, f_data in follower_objects.items():
                         try:
-                            # 🛡️ सुरक्षेसाठी रिस्क चेक: जर चालू तोटा सेट केलेल्या मर्यादेपेक्षा जास्त असेल तर ट्रेड टाळणे
+                            # 🛡️ कमाल तोटा मर्यादा (Max Risk Check) सुरक्षा कवच
                             f_state = f_data["connection"].terminal_state
                             balance = f_state.account_information.get('balance', 1.0)
                             pnl = f_state.account_information.get('profit', 0.0)
