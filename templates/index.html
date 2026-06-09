@@ -1,14 +1,10 @@
 <!DOCTYPE html>
 <html>
-<head><title>Dashboard</title></head>
+<head>
+    <title>Dashboard</title>
+</head>
 <body>
     <h1>CopyTrader Dashboard</h1>
-    <a href="/logout">Logout</a>
-    <table border="1">
-        <tr><th>Name</th><th>Equity</th><th>PnL</th></tr>
-        {% for acc in accounts %}
-        <tr><td>{{ acc[4] }}</td><td>${{ acc[8] }}</td><td>${{ acc[9] }}</td></tr>
-        {% endfor %}
-    </table>
+    <p>Welcome to the secure dashboard.</p>
 </body>
 </html>
