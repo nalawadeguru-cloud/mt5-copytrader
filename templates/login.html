@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Secure Login</title>
+    <!-- Google Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         
-        /* 📈 इंडेक्स पेजप्रमाणेच मॅचिंग फॉरेक्स ट्रेडिंग बॅकग्राऊंड विथ डार्क ओव्हरले */
+        /* 📈 फॉरेक्स ट्रेडिंग बॅकग्राऊंड विथ डार्क ओव्हरले */
         body {
             background: linear-gradient(135deg, rgba(15, 23, 42, 0.93) 0%, rgba(15, 23, 42, 0.88) 100%), 
                         url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=1920&auto=format&fit=crop') no-repeat center center fixed;
@@ -23,7 +24,7 @@
             padding: 20px;
         }
         
-        /* 🔒 प्रीमियम लॉगिन कार्ड (Glassmorphism Look) */
+        /* 🔒 लॉगिन कार्ड (Glassmorphism Look) */
         .login-card {
             background: rgba(30, 41, 59, 0.55);
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -34,6 +35,7 @@
             max-width: 380px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.4);
             text-align: center;
+            position: relative;
         }
         
         .icon-header {
@@ -46,7 +48,7 @@
         h2 { color: #f1f5f9; margin-bottom: 8px; font-weight: 600; font-size: 1.4rem; }
         p { color: #94a3b8; font-size: 0.85rem; margin-bottom: 25px; }
         
-        /* 🔑 पिन कोड इनपुट बॉक्स */
+        /* 🔑 इनपुट बॉक्स */
         .form-control {
             width: 100%; 
             background: rgba(15, 23, 42, 0.7); 
@@ -57,7 +59,7 @@
             text-align: center; 
             font-size: 1.6rem;
             letter-spacing: 8px; 
-            margin-bottom: 20px; 
+            margin-bottom: 15px; 
             outline: none; 
             transition: 0.3s;
         }
@@ -66,6 +68,22 @@
             box-shadow: 0 0 12px rgba(56, 189, 248, 0.25); 
             background: rgba(15, 23, 42, 0.85); 
         }
+        
+        /* फॉरगेट पासवर्ड लिंक */
+        .forgot-link-container {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        .btn-forgot {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            text-decoration: none;
+            transition: 0.2s;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        .btn-forgot:hover { color: #38bdf8; text-decoration: underline; }
         
         /* 🚀 अनलॉक बटण */
         .btn-submit {
@@ -89,7 +107,7 @@
             box-shadow: 0 8px 25px rgba(56, 189, 248, 0.4); 
         }
         
-        /* ❌ एरर मेसेज डिझाईन */
+        /* ❌ एरर मेसेज */
         .error-box { 
             background: rgba(239, 68, 68, 0.15);
             color: #f87171; 
@@ -98,15 +116,59 @@
             border-radius: 8px;
             font-size: 0.85rem; 
             margin-bottom: 20px; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
         }
+
+        /* 📌 FORGOT PASSWORD MODAL (पॉप-अप विंडो) */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
+            display: none; align-items: center; justify-content: center;
+            z-index: 100; padding: 20px;
+        }
+        .modal-card {
+            background: #1e293b;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 30px; border-radius: 16px;
+            width: 100%; max-width: 400px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            text-align: left;
+        }
+        .modal-card h3 { font-size: 1.2rem; color: #f1f5f9; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .modal-card h3 i { color: #eab308; }
+        .modal-card p { margin-bottom: 15px; color: #94a3b8; text-align: left; }
+        
+        .modal-input {
+            width: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px; padding: 12px; color: white; font-size: 0.95rem; outline: none; margin-bottom: 15px;
+        }
+        .modal-input:focus { border-color: #38bdf8; }
+        
+        .modal-actions { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-cancel {
+            flex: 1; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            color: #94a3b8; border-radius: 8px; cursor: pointer; font-weight: 500; transition: 0.2s; text-align: center;
+        }
+        .btn-cancel:hover { background: rgba(255,255,255,0.1); color: white; }
+        
+        .btn-verify {
+            flex: 1; padding: 12px; background: #38bdf8; border: none; color: #0f172a;
+            border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; text-align: center;
+        }
+        .btn-verify:hover { background: #0ea5e9; box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); }
+        
+        /* रिकव्हरी रिझल्ट बॉक्स */
+        .recovery-result {
+            margin-top: 15px; padding: 12px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; display: none; text-align: center;
+        }
+        .recovery-success { background: rgba(52, 211, 153, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.25); }
+        .recovery-error { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.25); }
     </style>
 </head>
 <body>
 
+    <!-- 🔒 मुख्य लॉगिन कार्ड -->
     <div class="login-card">
         <div class="icon-header">
             <i class="fa-solid fa-shield-halved"></i>
@@ -122,11 +184,75 @@
 
         <form action="/verify-pin" method="post">
             <input type="password" name="pin" class="form-control" placeholder="••••" maxlength="6" inputmode="numeric" required autocomplete="off">
+            
+            <!-- पासवर्ड विसरल्यास पर्याय लिंक -->
+            <div class="forgot-link-container">
+                <button type="button" class="btn-forgot" onclick="openModal()">Forgot PIN?</button>
+            </div>
+
             <button type="submit" class="btn-submit">
                 <i class="fa-solid fa-lock-open"></i> Unlock Dashboard
             </button>
         </form>
     </div>
+
+    <!-- 📌 FORGOT PASSWORD MODAL (पॉप-अप सुरक्षितता खिडकी) -->
+    <div class="modal-overlay" id="forgotModal">
+        <div class="modal-card">
+            <h3><i class="fa-solid fa-key"></i> Security Recovery</h3>
+            <p>पिन पुन्हा मिळवण्यासाठी तुमच्या गुप्त प्रश्नाचे योग्य उत्तर द्या:</p>
+            
+            <form id="recoveryForm" onsubmit="handleRecovery(event)">
+                <label style="display:block; color:#94a3b8; font-size:0.8rem; margin-bottom:5px; font-weight:500;">SECURITY QUESTION:</label>
+                <!-- हा प्रश्न तुम्ही तुमच्या सोयीने बदलू शकता -->
+                <div style="background:#0f172a; padding:12px; border-radius:8px; color:#38bdf8; font-weight:500; font-size:0.9rem; margin-bottom:15px; border:1px solid rgba(255,255,255,0.05)">
+                    What is your favorite trading asset?
+                </div>
+                
+                <label style="display:block; color:#94a3b8; font-size:0.8rem; margin-bottom:5px; font-weight:500;">YOUR ANSWER:</label>
+                <input type="text" id="securityAnswer" class="modal-input" placeholder="तुमचे उत्तर इथे टाईप करा..." required autocomplete="off">
+                
+                <!-- रिझल्ट मेसेज दाखवण्यासाठी -->
+                <div id="recoveryResult" class="recovery-result"></div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn-verify">Verify Answer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 🛠️ पॉप-अप मॅनेज करण्याचा स्मार्ट आणि सुरक्षित जावास्क्रिप्ट कोड -->
+    <script>
+        function openModal() {
+            document.getElementById('forgotModal').style.display = 'flex';
+            document.getElementById('securityAnswer').value = '';
+            document.getElementById('recoveryResult').style.display = 'none';
+        }
+
+        function closeModal() {
+            document.getElementById('forgotModal').style.display = 'none';
+        }
+
+        function handleRecovery(event) {
+            event.preventDefault();
+            const answer = document.getElementById('securityAnswer').value.trim().toLowerCase();
+            const resultBox = document.getElementById('recoveryResult');
+            
+            // 🔒 सुरक्षा नियम: समजा गुपित उत्तर "gold" किंवा "xauusd" आहे
+            if (answer === 'Gold' || answer === 'xauusd') {
+                resultBox.className = 'recovery-result recovery-success';
+                // तुमचा खरा पिन जो main.py मध्ये आहे तो इथे दिसेल (उदा. 2026)
+                resultBox.innerHTML = '<i class="fa-solid fa-circle-check"></i> Verified! Your Security PIN is: <strong>2026</strong>';
+                resultBox.style.display = 'block';
+            } else {
+                resultBox.className = 'recovery-result recovery-error';
+                resultBox.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> चुकीचे उत्तर! पुन्हा प्रयत्न करा.';
+                resultBox.style.display = 'block';
+            }
+        }
+    </script>
 
 </body>
 </html>
