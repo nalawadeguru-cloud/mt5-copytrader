@@ -1,263 +1,257 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MT5 CopyTrader Ultra Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+import asyncio
+from fastapi import FastAPI, Request, Form, BackgroundTasks, HTTPException
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.templating import Jinja2Templates
+import sqlite3
+from pathlib import Path
+
+app = FastAPI()
+
+# 📂 डिरेक्टरी पाथ शोधण्याची अचूक पद्धत (Render आणि Mobile फिक्ससाठी)
+BASE_DIR = Path(__file__).resolve().parent
+TEMPLATES_DIR = BASE_DIR / "templates"
+DB_PATH = BASE_DIR / "database.db"
+
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+
+# 🔑 सुरक्षा पिन कोड
+SECRET_PIN = "2026" 
+
+is_authenticated = False
+running_engine_id = 0
+
+def init_db():
+    conn = sqlite3.connect(str(DB_PATH))
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS accounts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_type TEXT,
+            metaapi_account_id TEXT,
+            multiplier REAL DEFAULT 1.0,
+            account_name TEXT DEFAULT 'Unnamed',
+            broker_name TEXT DEFAULT 'Unknown',
+            mt5_login TEXT DEFAULT '000000',
+            max_risk REAL DEFAULT 30.0,
+            equity REAL DEFAULT 0.0,
+            pnl REAL DEFAULT 0.0,
+            current_symbol TEXT DEFAULT 'None'
+        )
+    """)
     
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        
-        body { 
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.9) 100%), 
-                        url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=1920&auto=format&fit=crop') no-repeat center center fixed;
-            background-size: cover; color: #f8fafc; padding: 10px; min-height: 100vh;
-        }
-        
-        .container { max-width: 1400px; margin: 0 auto; padding: 5px; }
-        
-        /* 📱 मोबाईल रेडी हेडर */
-        .header { 
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; 
-            background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px;
-            padding: 12px 20px; backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-        .brand-box h1 { color: #38bdf8; font-size: 1.2rem; display: flex; align-items: center; gap: 8px; font-weight: 700; }
-        @media(min-width: 600px) { .brand-box h1 { font-size: 1.6rem; } }
-        
-        .user-profile { display: flex; align-items: center; gap: 12px; }
-        .user-info { text-align: right; }
-        .user-name { font-size: 0.85rem; font-weight: 600; color: #f1f5f9; }
-        .user-role { font-size: 0.7rem; color: #34d399; font-weight: 500; display: flex; align-items: center; gap: 4px; justify-content: flex-end; }
-        
-        .btn-logout { background: rgba(239, 68, 68, 0.15); color: #f87171; padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(239, 68, 68, 0.3); text-decoration: none; font-size: 0.8rem; font-weight: 600; transition: 0.3s; }
-        .btn-logout:hover { background: #ef4444; color: white; }
+    columns_to_add = [
+        ("account_name", "TEXT DEFAULT 'Unnamed'"),
+        ("broker_name", "TEXT DEFAULT 'Unknown'"),
+        ("mt5_login", "TEXT DEFAULT '000000'"),
+        ("max_risk", "REAL DEFAULT 30.0"),
+        ("equity", "REAL DEFAULT 0.0"),
+        ("pnl", "REAL DEFAULT 0.0"),
+        ("current_symbol", "TEXT DEFAULT 'None'")
+    ]
+    for col, col_type in columns_to_add:
+        try:
+            cursor.execute(f"ALTER TABLE accounts ADD COLUMN {col} {col_type}")
+        except sqlite3.OperationalError:
+            pass
+            
+    conn.commit()
+    conn.close()
 
-        /* 📱 मोबाईल आणि डेस्कटॉपसाठी परफेक्ट २-कॉलम आकडेवारी ग्रीड */
-        .status-grid { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 12px; 
-            margin-bottom: 20px; 
-        }
-        @media(max-width: 480px) {
-            .status-grid { grid-template-columns: 1fr; } 
-        }
-        
-        .status-card { background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px; display: flex; align-items: center; gap: 10px; backdrop-filter: blur(10px); }
-        .icon-box { width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
-        .icon-blue { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
-        .icon-green { background: rgba(52, 211, 153, 0.15); color: #34d399; }
-        .status-info p { font-size: 0.65rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
-        .status-info h2 { font-size: 0.95rem; font-weight: 600; color: #f8fafc; white-space: nowrap; }
+init_db()
 
-        .main-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
-        @media (min-width: 1100px) { .main-grid { grid-template-columns: 3.8fr 8.2fr; } }
-        
-        .card { background: rgba(30, 41, 59, 0.55); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 18px; backdrop-filter: blur(14px); box-shadow: 0 15px 35px rgba(0,0,0,0.35); }
-        h3 { color: #f1f5f9; margin-bottom: 15px; font-weight: 600; font-size: 1rem; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
-        h3 i { color: #38bdf8; }
-        
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .form-group { margin-bottom: 12px; }
-        label { display: block; color: #94a3b8; font-size: 0.7rem; font-weight: 600; margin-bottom: 4px; text-transform: uppercase; }
-        .form-control { width: 100%; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 10px; color: white; outline: none; font-size: 0.85rem; transition: 0.3s; }
-        .form-control:focus { border-color: #38bdf8; background: rgba(15, 23, 42, 0.85); }
-        select.form-control option { background: #1e293b; color: white; }
-        
-        .btn-submit { width: 100%; background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%); color: white; padding: 12px; border: none; border-radius: 10px; font-weight: 600; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
-        .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 5px 15px rgba(56, 189, 248, 0.3); }
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request, error: str = ""):
+    # 💻 फिक्स: रेंडर वरील सिस्टीमसाठी स्टँडर्ड पॅरामीटर फॉरमॅट
+    return templates.TemplateResponse("login.html", {"request": request, "error": error})
 
-        /* 📊 मोबाईलवर टेबल सुरक्षित स्क्रोल होण्यासाठी कंटेनर */
-        .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: -8px; }
-        table { width: 100%; border-collapse: separate; border-spacing: 0 8px; min-width: 750px; } 
-        th { padding: 10px; color: #64748b; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; text-align: left; }
-        td { padding: 12px 10px; background: rgba(15, 23, 42, 0.6); border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.82rem; }
-        tr td:first-child { border-left: 1px solid rgba(255,255,255,0.05); border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
-        tr td:last-child { border-right: 1px solid rgba(255,255,255,0.05); border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+@app.post("/verify-pin")
+async def verify_pin(pin: str = Form(...)):
+    global is_authenticated
+    if pin == SECRET_PIN:
+        is_authenticated = True
+        return RedirectResponse(url="/", status_code=303)
+    else:
+        return RedirectResponse(url="/login?error=चुकीचा पिन कोड! पुन्हा प्रयत्न करा.", status_code=303)
+
+@app.get("/logout")
+async def logout():
+    global is_authenticated
+    is_authenticated = False
+    return RedirectResponse(url="/login", status_code=303)
+
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request):
+    global is_authenticated
+    if not is_authenticated:
+        return RedirectResponse(url="/login", status_code=303)
         
-        .badge { padding: 4px 6px; border-radius: 6px; font-size: 0.65rem; font-weight: 600; }
-        .badge-master { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25); }
-        .badge-follower { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.25); }
+    try:
+        conn = sqlite3.connect(str(DB_PATH))
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, user_type, metaapi_account_id, multiplier, account_name, broker_name, mt5_login, max_risk, equity, pnl, current_symbol FROM accounts")
+        accounts = cursor.fetchall()
+        conn.close()
+        return templates.TemplateResponse("index.html", {"request": request, "accounts": accounts})
+    except Exception as e:
+        return HTMLResponse(content=f"<h3>Database Error: {str(e)}</h3>", status_code=500)
+
+@app.post("/add-account")
+async def add_account(
+    background_tasks: BackgroundTasks,
+    user_type: str = Form(...), 
+    metaapi_account_id: str = Form(...), 
+    multiplier: float = Form(...),
+    account_name: str = Form(...),
+    broker_name: str = Form(...),
+    mt5_login: str = Form(...),
+    max_risk: float = Form(...)
+):
+    global is_authenticated
+    if not is_authenticated:
+        raise HTTPException(status_code=403, detail="Not authenticated")
         
-        .txt-profit { color: #34d399; font-weight: 600; font-family: monospace; }
-        .txt-loss { color: #f87171; font-weight: 600; font-family: monospace; }
-        .symbol-badge { background: rgba(56, 189, 248, 0.08); padding: 3px 6px; border-radius: 6px; font-family: monospace; font-size: 0.75rem; color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.15); }
-        .info-notice { background: rgba(234, 179, 8, 0.1); color: #fde047; border: 1px solid rgba(234, 179, 8, 0.2); padding: 10px; border-radius: 8px; font-size: 0.72rem; margin-bottom: 12px; display: flex; gap: 6px; }
+    try:
+        conn = sqlite3.connect(str(DB_PATH))
+        cursor = conn.cursor()
+        cursor.execute(
+            """INSERT INTO accounts 
+            (user_type, metaapi_account_id, multiplier, account_name, broker_name, mt5_login, max_risk) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)""", 
+            (user_type, metaapi_account_id, multiplier, account_name, broker_name, mt5_login, max_risk)
+        )
+        conn.commit()
+        conn.close()
         
-        .meta-id { font-family: monospace; color: #64748b; font-size: 0.7rem; display: block; margin-top: 2px; }
-        .sub-txt { font-size: 0.7rem; color: #64748b; display: block; }
-    </style>
-</head>
-<body>
+        global running_engine_id
+        running_engine_id += 1
+        background_tasks.add_task(start_copy_engine, running_engine_id)
+        return RedirectResponse(url="/", status_code=303)
+    except Exception as e:
+        return HTMLResponse(content=f"<h3>Error: {str(e)}</h3>", status_code=500)
 
-    {% set has_master = false %}
-    {% if accounts %}
-        {% for acc in accounts %}
-            {% if acc[1].lower() == 'master' %}
-                {% set has_master = true %}
-            {% endif %}
-        {% endfor %}
-    {% endif %}
+async def start_copy_engine(engine_id: int):
+    global running_engine_id
+    try:
+        from metaapi_cloud_sdk import MetaApi
+        API_TOKEN = "YOUR_METAAPI_TOKEN_HERE" 
+        api = MetaApi(token=API_TOKEN)
+        
+        conn = sqlite3.connect(str(DB_PATH))
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, user_type, metaapi_account_id, multiplier, max_risk FROM accounts")
+        rows = cursor.fetchall()
+        conn.close()
 
-    <div class="container">
-        <div class="header">
-            <div class="brand-box">
-                <h1><i class="fa-solid fa-bolt-lightning"></i> CopyTrader Ultra</h1>
-            </div>
-            <div class="user-profile">
-                <div class="user-info">
-                    <div class="user-name">Guruprasad Nalawade</div>
-                    <div class="user-role"><span style="width:6px; height:6px; background:#34d399; border-radius:50%; display:inline-block; box-shadow:0 0 6px #34d399;"></span> Admin</div>
-                </div>
-                <a href="/logout" class="btn-logout"><i class="fa-solid fa-power-off"></i></a>
-            </div>
-        </div>
+        master_id = None
+        followers = []
+        for row in rows:
+            if row[1].lower() == 'master':
+                master_id = row[2]
+            else:
+                followers.append({'db_id': row[0], 'id': row[2], 'multiplier': row[3], 'max_risk': row[4]})
 
-        <div class="status-grid">
-            <div class="status-card">
-                <div class="icon-box icon-blue"><i class="fa-solid fa-network-wired"></i></div>
-                <div class="status-info">
-                    <p>Engine Core</p>
-                    <h2>Multi-Live</h2>
-                </div>
-            </div>
-            <div class="status-card">
-                <div class="icon-box icon-green"><i class="fa-solid fa-wallet"></i></div>
-                <div class="status-info">
-                    <p>Terminals</p>
-                    <h2>{% if accounts %}{{ accounts|length }}{% else %}0{% endif %} Active</h2>
-                </div>
-            </div>
-        </div>
+        if not master_id:
+            return
 
-        <div class="main-grid">
-            <div class="card">
-                <h3><i class="fa-solid fa-circle-plus"></i> Secure Deployment</h3>
+        master_account = await asyncio.wait_for(api.metatrader_account_api.get_account(master_id), timeout=30)
+        await asyncio.wait_for(master_account.wait_connected(), timeout=30)
+        master_connection = master_account.get_streaming_connection()
+        await asyncio.wait_for(master_connection.connect(), timeout=30)
+        await asyncio.wait_for(master_connection.wait_synchronized(), timeout=45)
+
+        follower_objects = {}
+        for f in followers:
+            try:
+                if engine_id != running_engine_id: return
+                f_acc = await asyncio.wait_for(api.metatrader_account_api.get_account(f['id']), timeout=30)
+                await asyncio.wait_for(f_acc.wait_connected(), timeout=30)
+                f_conn = f_acc.get_streaming_connection()
+                await f_conn.connect()
+                await f_conn.wait_synchronized()
                 
-                {% if has_master %}
-                    <div class="info-notice">
-                        <i class="fa-solid fa-circle-info" style="margin-top: 2px;"></i>
-                        <span>Master जोडलेले आहे. फॉलोअर्स सुरक्षितपणे कॉन्फिगर करा.</span>
-                    </div>
-                {% endif %}
+                follower_objects[str(f['id'])] = {
+                    "account": f_acc, 
+                    "connection": f_conn,
+                    "multiplier": f['multiplier'],
+                    "max_risk": f['max_risk'],
+                    "db_id": f['db_id']
+                }
+            except Exception as fe:
+                print(f"❌ Follower [{f['id']}] Connection Error: {fe}")
 
-                <form action="/add-account" method="post">
-                    <div class="form-group">
-                        <label><i class="fa-solid fa-user"></i> Customer Name</label>
-                        <input type="text" name="account_name" class="form-control" placeholder="उदा. विक्रम जांभळे" required autocomplete="off">
-                    </div>
+        async def update_account_metrics():
+            while engine_id == running_engine_id:
+                try:
+                    conn = sqlite3.connect(str(DB_PATH))
+                    cursor = conn.cursor()
+                    
+                    m_state = master_connection.terminal_state
+                    m_equity = m_state.account_information.get('equity', 0.0)
+                    m_pnl = m_state.account_information.get('profit', 0.0)
+                    m_positions = m_state.positions
+                    m_sym = m_positions[0].get('symbol', 'None') if m_positions else 'None'
+                    
+                    cursor.execute("UPDATE accounts SET equity=?, pnl=?, current_symbol=? WHERE user_type='Master'", (m_equity, m_pnl, m_sym))
+                    
+                    for f_id, f_data in follower_objects.items():
+                        f_state = f_data["connection"].terminal_state
+                        f_equity = f_state.account_information.get('equity', 0.0)
+                        f_pnl = f_state.account_information.get('profit', 0.0)
+                        f_pos = f_state.positions
+                        f_sym = f_pos[0].get('symbol', 'None') if f_pos else 'None'
+                        
+                        cursor.execute("UPDATE accounts SET equity=?, pnl=?, current_symbol=? WHERE id=?", (f_equity, f_pnl, f_sym, f_data["db_id"]))
+                    
+                    conn.commit()
+                    conn.close()
+                except Exception as ue:
+                    print(f"Metrics Update Error: {ue}")
+                await asyncio.sleep(2)
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label><i class="fa-solid fa-building-columns"></i> Broker Name</label>
-                            <input type="text" name="broker_name" class="form-control" placeholder="Exness / XM" required autocomplete="off">
-                        </div>
-                        <div class="form-group">
-                            <label><i class="fa-solid fa-hashtag"></i> MT5 Login ID</label>
-                            <input type="text" name="mt5_login" class="form-control" placeholder="6589321" required autocomplete="off">
-                        </div>
-                    </div>
+        asyncio.create_task(update_account_metrics())
 
-                    <div class="form-group">
-                        <label><i class="fa-solid fa-sliders"></i> Account Type</label>
-                        <select name="user_type" class="form-control" required>
-                            {% if not has_master %}
-                                <option value="Master">Master Account</option>
-                            {% endif %}
-                            <option value="Follower" selected>Follower Account</option>
-                        </select>
-                    </div>
+        class TradeCopyListener:
+            async def on_positions_synchronized(self, instance_index, synchronization_id):
+                if engine_id != running_engine_id: return
+                master_positions = master_connection.terminal_state.positions
+                if not master_positions: return
 
-                    <div class="form-group">
-                        <label><i class="fa-solid fa-fingerprint"></i> MetaAPI Account ID</label>
-                        <input type="text" name="metaapi_account_id" class="form-control" placeholder="metaapi-uuid-here..." required autocomplete="off">
-                    </div>
+                for pos in master_positions:
+                    symbol = pos.get('symbol')
+                    position_type = pos.get('type')
+                    volume = pos.get('volume', 0)
+                    order_type = 'ORDER_TYPE_BUY' if position_type == 'POSITION_TYPE_BUY' else 'ORDER_TYPE_SELL'
+                    
+                    for f_id, f_data in follower_objects.items():
+                        try:
+                            f_state = f_data["connection"].terminal_state
+                            balance = f_state.account_information.get('balance', 1.0)
+                            pnl = f_state.account_information.get('profit', 0.0)
+                            current_dd = (abs(pnl) / balance) * 100 if pnl < 0 else 0
+                            
+                            if current_dd > f_data["max_risk"]:
+                                print(f"⚠️ Follower [{f_id}] Risk Limit Exceeded. Skipped!")
+                                continue
+                                
+                            f_acc = f_data["account"]
+                            mult = f_data["multiplier"]
+                            target_volume = max(round(volume * mult, 2), 0.01)
+                            await f_acc.create_market_order(symbol, order_type, target_volume)
+                        except Exception as copy_err:
+                            print(f"❌ Follower [{f_id}] Copy Error: {copy_err}")
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label><i class="fa-solid fa-calculator"></i> Multiplier</label>
-                            <input type="number" name="multiplier" class="form-control" value="1.0" step="0.1" min="0.1" required>
-                        </div>
-                        <div class="form-group">
-                            <label><i class="fa-solid fa-shield-halved"></i> Max Risk (%)</label>
-                            <input type="number" name="max_risk" class="form-control" value="30" min="1" max="100" required>
-                        </div>
-                    </div>
+        master_connection.add_synchronization_listener(TradeCopyListener())
+        while engine_id == running_engine_id:
+            await asyncio.sleep(1)
 
-                    <button type="submit" class="btn-submit">
-                        <i class="fa-solid fa-circle-check"></i> Secure Sync Terminal
-                    </button>
-                </form>
-            </div>
+    except Exception as e:
+        print(f"❌ [Engine {engine_id}] Crashed: {e}")
+        await asyncio.sleep(10)
+        if engine_id == running_engine_id:
+            await start_copy_engine(engine_id)
 
-            <div class="card">
-                <h3><i class="fa-solid fa-table-list"></i> Fleet Control</h3>
-                
-                <div class="table-container">
-                {% if accounts %}
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Customer Details</th>
-                                <th>Type</th>
-                                <th>Broker / Login</th>
-                                <th>Equity</th>
-                                <th>Current PnL</th>
-                                <th>Running Symbol</th>
-                                <th style="text-align: center;">Mult / Risk</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for acc in accounts %}
-                                <tr>
-                                    <td>
-                                        <span style="font-weight: 600; color: #f1f5f9;">{{ acc[4] }}</span>
-                                        <span class="meta-id">ID: {{ acc[2][:8] }}...</span>
-                                    </td>
-                                    <td>
-                                        {% if acc[1].lower() == 'master' %}
-                                            <span class="badge badge-master"><i class="fa-solid fa-crown"></i> Master</span>
-                                        {% else %}
-                                            <span class="badge badge-follower"><i class="fa-solid fa-user-gear"></i> Follower</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <span style="color: #cbd5e1; font-weight: 500;">{{ acc[5] }}</span>
-                                        <span class="sub-txt">Acc: {{ acc[6] }}</span>
-                                    </td>
-                                    <td style="font-family: monospace; color: #cbd5e1; font-weight: 500;">
-                                        ${{ "{:,.2f}".format(acc[8]) }}
-                                    </td>
-                                    <td class="{% if acc[9] >= 0 %}txt-profit{% else %}txt-loss{% endif %}">
-                                        {% if acc[9] >= 0 %}+{% endif %}${{ "{:,.2f}".format(acc[9]) }}
-                                    </td>
-                                    <td>
-                                        <span class="symbol-badge">
-                                            <i class="fa-solid fa-chart-line" style="font-size: 0.65rem; margin-right: 2px;"></i>
-                                            {{ acc[10] }}
-                                        </span>
-                                    </td>
-                                    <td style="text-align: center;">
-                                        <span style="color: #38bdf8; font-weight: 700; display: block;">{{ acc[3] }}x</span>
-                                        <span style="color: #ef4444; font-size: 0.68rem; font-weight: 500;">Limit: {{ acc[7] }}%</span>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                {% else %}
-                    <div style="text-align: center; padding: 40px 0; color: #475569;">
-                        <i class="fa-solid fa-folder-open" style="font-size: 2.5rem; margin-bottom: 12px;"></i>
-                        <p style="font-size: 0.9rem; color: #94a3b8;">कोणतीही सिस्टीम जोडलेली नाही.</p>
-                    </div>
-                {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-
-</body>
-</html>
+@app.on_event("startup")
+async def startup_event():
+    global running_engine_id
+    running_engine_id += 1
+    asyncio.create_task(start_copy_engine(running_engine_id))
