@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="mr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,8 +9,7 @@
     
     <style>
         :root {
-            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-bg: rgba(15, 23, 42, 0.55); /* अधिक पारदर्शक जेणेकरून बॅकग्राउंड दिसेल */
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --primary: #38bdf8;
@@ -28,7 +27,10 @@
         }
 
         body {
-            background: var(--bg-gradient);
+            /* 📈 फॉरेक्स ट्रेडिंग चार्ट बॅकग्राउंड इमेज आणि डार्क ओव्हरले */
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(30, 41, 59, 0.88) 100%), 
+                        url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=1920&auto=format&fit=crop') no-repeat center center fixed;
+            background-size: cover;
             color: var(--text-main);
             min-height: 100vh;
             padding: 40px 20px;
@@ -47,23 +49,26 @@
         }
 
         header h1 {
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             font-weight: 700;
             letter-spacing: -0.5px;
             background: linear-gradient(to right, #38bdf8, #34d399);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 10px;
+            text-shadow: 0 4px 12px rgba(56, 189, 248, 0.1);
         }
 
         header p {
             color: var(--text-muted);
             font-size: 1.1rem;
+            font-weight: 400;
         }
 
         header p i {
             color: var(--success);
             margin-right: 5px;
+            animation: pulse 2s infinite;
         }
 
         /* ---- Main Grid ---- */
@@ -75,19 +80,20 @@
 
         @media (min-width: 768px) {
             .main-grid {
-                grid-template-columns: 350px 1fr;
+                grid-template-columns: 380px 1fr;
             }
         }
 
         /* ---- Card Styling ---- */
         .card {
             background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--border);
             border-radius: 16px;
             padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            /* ग्लासमोर्फिझम इफेक्ट */
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             animation: slideUp 0.6s ease;
         }
 
@@ -103,7 +109,7 @@
             padding-bottom: 12px;
         }
 
-        /* ---- Form Elements ---- */
+        /* ---- Form Elements (English Inputs) ---- */
         .form-group {
             margin-bottom: 20px;
         }
@@ -113,14 +119,14 @@
             font-size: 0.85rem;
             color: var(--text-muted);
             margin-bottom: 8px;
-            font-weight: 500;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.75px;
         }
 
         .form-control {
             width: 100%;
-            background: rgba(15, 23, 42, 0.6);
+            background: rgba(15, 23, 42, 0.7);
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 12px 16px;
@@ -136,7 +142,7 @@
         }
 
         select.form-control option {
-            background: #1e293b;
+            background: #0f172a;
             color: var(--text-main);
         }
 
@@ -196,10 +202,10 @@
         }
 
         tr:hover td {
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(255, 255, 255, 0.03);
         }
 
-        /* Badge Badges */
+        /* Status Badges */
         .badge {
             padding: 6px 12px;
             border-radius: 20px;
@@ -211,15 +217,15 @@
         }
 
         .badge-master {
-            background: rgba(52, 211, 153, 0.15);
+            background: rgba(52, 211, 153, 0.12);
             color: var(--success);
-            border: 1px solid rgba(52, 211, 153, 0.3);
+            border: 1px solid rgba(52, 211, 153, 0.25);
         }
 
         .badge-follower {
-            background: rgba(56, 189, 248, 0.15);
+            background: rgba(56, 189, 248, 0.12);
             color: var(--primary);
-            border: 1px solid rgba(56, 189, 248, 0.3);
+            border: 1px solid rgba(56, 189, 248, 0.25);
         }
 
         .multiplier-text {
@@ -236,7 +242,7 @@
         .empty-state i {
             font-size: 3rem;
             margin-bottom: 15px;
-            opacity: 0.3;
+            opacity: 0.2;
         }
 
         /* ---- Animations ---- */
@@ -249,49 +255,55 @@
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
         <header>
-            <h1><i class="fa-solid fa-bolt"></i> MT5 COPYTRADER</h1>
-            <p><i class="fa-solid fa-circle-check"></i> सिस्टीम सर्व्हरवर २४/७ सुरक्षितपणे लाईव्ह आहे</p>
+            <h1><i class="fa-solid fa-chart-line"></i> MT5 COPYTRADER</h1>
+            <p><i class="fa-solid fa-circle-check"></i> System is running 24/7 on cloud server</p>
         </header>
 
         <div class="main-grid">
             <div class="card">
                 <div class="card-title">
-                    <i class="fa-solid fa-user-plus"></i> नवीन अकाऊंट जोडा
+                    <i class="fa-solid fa-user-plus"></i> Add New Account
                 </div>
                 <form action="/add-account" method="post">
                     <div class="form-group">
-                        <label for="user_type">अकाऊंटचा प्रकार</label>
+                        <label for="user_type">Account Type</label>
                         <select name="user_type" id="user_type" class="form-control" required>
-                            <option value="Master">Master Account (मुख्य)</option>
-                            <option value="Follower">Follower Account (कॉपी)</option>
+                            <option value="Master">Master Account</option>
+                            <option value="Follower">Follower Account</option>
                         </select>
                     </div>
 
                     <div class="form-group">
                         <label for="metaapi_account_id">MetaAPI Account ID</label>
-                        <input type="text" name="metaapi_account_id" id="metaapi_account_id" class="form-control" placeholder="उदा. 123456" required>
+                        <input type="text" name="metaapi_account_id" id="metaapi_account_id" class="form-control" placeholder="Enter Account ID" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="multiplier">लॉट साईझ मल्टिप्लायर (Multiplier)</label>
+                        <label for="multiplier">Lot Size Multiplier</label>
                         <input type="number" step="0.1" name="multiplier" id="multiplier" class="form-control" value="1.0" min="0.1" required>
                     </div>
 
                     <button type="submit" class="btn">
-                        <i class="fa-solid fa-plus"></i> सिस्टीममध्ये जोडा
+                        <i class="fa-solid fa-plus"></i> Link Account
                     </button>
                 </form>
             </div>
 
             <div class="card">
                 <div class="card-title">
-                    <i class="fa-solid fa-list-check"></i> जोडलेली ॲक्टिव्ह अकाऊंट्स
+                    <i class="fa-solid fa-list-check"></i> Active Linked Accounts
                 </div>
                 
                 <div class="table-responsive">
@@ -300,9 +312,9 @@
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>प्रकार</th>
+                                    <th>Type</th>
                                     <th>MetaAPI Account ID</th>
-                                    <th>मल्टिप्लायर</th>
+                                    <th>Multiplier</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -325,7 +337,7 @@
                     {% else %}
                         <div class="empty-state">
                             <i class="fa-solid fa-folder-open"></i>
-                            <p>डॅशबोर्डवर अजून कोणतीही अकाऊंट्स जोडलेली नाहीत.</p>
+                            <p>No accounts linked yet. Add your accounts to start copying trades.</p>
                         </div>
                     {% endif %}
                 </div>
