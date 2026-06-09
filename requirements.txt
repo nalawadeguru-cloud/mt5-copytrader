@@ -3,3 +3,4 @@ uvicorn
 pydantic
 metaapi-cloud-sdk
 jinja2
+python-multipart
