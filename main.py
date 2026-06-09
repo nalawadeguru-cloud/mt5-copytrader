@@ -3,13 +3,16 @@ from fastapi import FastAPI, Request, Form, BackgroundTasks, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 import sqlite3
-import os
+from pathlib import Path
 
 app = FastAPI()
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
-DB_PATH = os.path.join(BASE_DIR, "database.db")
+# 📂 डिरेक्टरी पाथ शोधण्याची अचूक पद्धत (Render आणि Mobile फिक्ससाठी)
+BASE_DIR = Path(__file__).resolve().parent
+TEMPLATES_DIR = BASE_DIR / "templates"
+DB_PATH = BASE_DIR / "database.db"
+
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 # 🔑 सुरक्षा पिन कोड
 SECRET_PIN = "2026" 
@@ -18,9 +21,8 @@ is_authenticated = False
 running_engine_id = 0
 
 def init_db():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(str(DB_PATH))
     cursor = conn.cursor()
-    # 📊 सर्व आवश्यक इनपुट्स आणि लाईव्ह मॅट्रिक्ससह टेबल तयार करणे
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS accounts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,7 +39,6 @@ def init_db():
         )
     """)
     
-    # जुन्या डेटाबेसमध्ये नवीन कॉलम सुरक्षितपणे जोडण्यासाठी सेफ्टी चेक्स
     columns_to_add = [
         ("account_name", "TEXT DEFAULT 'Unnamed'"),
         ("broker_name", "TEXT DEFAULT 'Unknown'"),
@@ -60,7 +61,7 @@ init_db()
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request, error: str = ""):
-    # 💻 फिक्स: नवीन FastAPI व्हर्जननुसार सिस्टिमॅटिक आर्गुमेंट्स पास केले आहेत
+    # 💻 फिक्स: रेंडर वरील सिस्टीमसाठी स्टँडर्ड पॅरामीटर फॉरमॅट
     return templates.TemplateResponse("login.html", {"request": request, "error": error})
 
 @app.post("/verify-pin")
@@ -85,13 +86,11 @@ async def home(request: Request):
         return RedirectResponse(url="/login", status_code=303)
         
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = sqlite3.connect(str(DB_PATH))
         cursor = conn.cursor()
-        # सर्व आवश्यक माहिती डेटाबेसमधून ओढणे
         cursor.execute("SELECT id, user_type, metaapi_account_id, multiplier, account_name, broker_name, mt5_login, max_risk, equity, pnl, current_symbol FROM accounts")
         accounts = cursor.fetchall()
         conn.close()
-        # 💻 फिक्स: होम पेजसाठी योग्य रीतीने टेम्पलेट रिस्पॉन्स
         return templates.TemplateResponse("index.html", {"request": request, "accounts": accounts})
     except Exception as e:
         return HTMLResponse(content=f"<h3>Database Error: {str(e)}</h3>", status_code=500)
@@ -112,7 +111,7 @@ async def add_account(
         raise HTTPException(status_code=403, detail="Not authenticated")
         
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = sqlite3.connect(str(DB_PATH))
         cursor = conn.cursor()
         cursor.execute(
             """INSERT INTO accounts 
@@ -137,7 +136,7 @@ async def start_copy_engine(engine_id: int):
         API_TOKEN = "YOUR_METAAPI_TOKEN_HERE" 
         api = MetaApi(token=API_TOKEN)
         
-        conn = sqlite3.connect(DB_PATH)
+        conn = sqlite3.connect(str(DB_PATH))
         cursor = conn.cursor()
         cursor.execute("SELECT id, user_type, metaapi_account_id, multiplier, max_risk FROM accounts")
         rows = cursor.fetchall()
@@ -180,14 +179,12 @@ async def start_copy_engine(engine_id: int):
             except Exception as fe:
                 print(f"❌ Follower [{f['id']}] Connection Error: {fe}")
 
-        # 🔄 बॅकग्राउंड टास्क: प्रत्येक २ सेकंदाला लाईव्ह डेटाबेस अपडेट करणे
         async def update_account_metrics():
             while engine_id == running_engine_id:
                 try:
-                    conn = sqlite3.connect(DB_PATH)
+                    conn = sqlite3.connect(str(DB_PATH))
                     cursor = conn.cursor()
                     
-                    # १. मास्टर अकाऊंट लाईव्ह आकडेवारी
                     m_state = master_connection.terminal_state
                     m_equity = m_state.account_information.get('equity', 0.0)
                     m_pnl = m_state.account_information.get('profit', 0.0)
@@ -196,7 +193,6 @@ async def start_copy_engine(engine_id: int):
                     
                     cursor.execute("UPDATE accounts SET equity=?, pnl=?, current_symbol=? WHERE user_type='Master'", (m_equity, m_pnl, m_sym))
                     
-                    # २. सर्व फॉलोअर्सची लाईव्ह आकडेवारी
                     for f_id, f_data in follower_objects.items():
                         f_state = f_data["connection"].terminal_state
                         f_equity = f_state.account_information.get('equity', 0.0)
@@ -214,7 +210,6 @@ async def start_copy_engine(engine_id: int):
 
         asyncio.create_task(update_account_metrics())
 
-        # 👑 ट्रेड कॉपी करण्याचे मूळ लॉजिक (With Advanced Risk Guard)
         class TradeCopyListener:
             async def on_positions_synchronized(self, instance_index, synchronization_id):
                 if engine_id != running_engine_id: return
@@ -229,14 +224,13 @@ async def start_copy_engine(engine_id: int):
                     
                     for f_id, f_data in follower_objects.items():
                         try:
-                            # 🛡️ कमाल तोटा मर्यादा (Max Risk Check) सुरक्षा कवच
                             f_state = f_data["connection"].terminal_state
                             balance = f_state.account_information.get('balance', 1.0)
                             pnl = f_state.account_information.get('profit', 0.0)
                             current_dd = (abs(pnl) / balance) * 100 if pnl < 0 else 0
                             
                             if current_dd > f_data["max_risk"]:
-                                print(f"⚠️ Follower [{f_id}] Risk Limit Exceeded ({round(current_dd, 2)}%). Trade Skipped!")
+                                print(f"⚠️ Follower [{f_id}] Risk Limit Exceeded. Skipped!")
                                 continue
                                 
                             f_acc = f_data["account"]
