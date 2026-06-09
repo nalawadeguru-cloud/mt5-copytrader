@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Login</title>
+    <title>Dashboard Secure Login</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        
+        /* 📈 इंडेक्स पेजप्रमाणेच मॅचिंग फॉरेक्स ट्रेडिंग बॅकग्राऊंड विथ डार्क ओव्हरले */
         body {
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%), 
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.93) 0%, rgba(15, 23, 42, 0.88) 100%), 
                         url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=1920&auto=format&fit=crop') no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
@@ -17,51 +20,110 @@
             align-items: center;
             justify-content: center;
             color: #f8fafc;
+            padding: 20px;
         }
+        
+        /* 🔒 प्रीमियम लॉगिन कार्ड (Glassmorphism Look) */
         .login-card {
-            background: rgba(15, 23, 42, 0.75);
+            background: rgba(30, 41, 59, 0.55);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(16px);
-            padding: 40px;
+            backdrop-filter: blur(14px);
+            padding: 40px 30px;
             border-radius: 16px;
             width: 100%;
             max-width: 380px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
             text-align: center;
         }
-        h2 { color: #38bdf8; margin-bottom: 10px; font-weight: 600; }
-        p { color: #94a3b8; font-size: 0.9rem; margin-bottom: 25px; }
+        
+        .icon-header {
+            font-size: 2.5rem;
+            color: #38bdf8;
+            margin-bottom: 15px;
+            text-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+        }
+        
+        h2 { color: #f1f5f9; margin-bottom: 8px; font-weight: 600; font-size: 1.4rem; }
+        p { color: #94a3b8; font-size: 0.85rem; margin-bottom: 25px; }
+        
+        /* 🔑 पिन कोड इनपुट बॉक्स */
         .form-control {
-            width: 100%; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 8px; padding: 12px; color: white; text-align: center; font-size: 1.5rem;
-            letter-spacing: 8px; margin-bottom: 20px; outline: none; transition: 0.3s;
+            width: 100%; 
+            background: rgba(15, 23, 42, 0.7); 
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 10px; 
+            padding: 12px; 
+            color: white; 
+            text-align: center; 
+            font-size: 1.6rem;
+            letter-spacing: 8px; 
+            margin-bottom: 20px; 
+            outline: none; 
+            transition: 0.3s;
         }
-        .form-control:focus { border-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
-        .btn {
-            width: 100%; padding: 12px; border-radius: 8px; border: none;
-            font-weight: 600; cursor: pointer; transition: 0.3s;
-            background: linear-gradient(to right, #0284c7, #38bdf8); color: white;
-            font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px;
+        .form-control:focus { 
+            border-color: #38bdf8; 
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.25); 
+            background: rgba(15, 23, 42, 0.85); 
         }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4); }
-        .error-msg { color: #f87171; font-size: 0.85rem; margin-bottom: 15px; }
+        
+        /* 🚀 अनलॉक बटण */
+        .btn-submit {
+            width: 100%; 
+            padding: 14px; 
+            border-radius: 10px; 
+            border: none;
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: 0.3s;
+            background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%); 
+            color: white;
+            font-size: 0.95rem; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px;
+        }
+        .btn-submit:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 25px rgba(56, 189, 248, 0.4); 
+        }
+        
+        /* ❌ एरर मेसेज डिझाईन */
+        .error-box { 
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171; 
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.85rem; 
+            margin-bottom: 20px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
     </style>
 </head>
 <body>
 
     <div class="login-card">
-        <h2><i class="fa-solid fa-lock"></i> Secure Access</h2>
-        <p>Enter Security PIN to unlock dashboard</p>
+        <div class="icon-header">
+            <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h2>Secure Terminal Access</h2>
+        <p>Enter your Security PIN to unlock the system</p>
         
         {% if error %}
-            <div class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> {{ error }}</div>
+            <div class="error-box">
+                <i class="fa-solid fa-circle-exclamation"></i> {{ error }}
+            </div>
         {% endif %}
 
         <form action="/verify-pin" method="post">
-            <!-- पासवर्ड टाईप इनपुट जेणेकरून नंबर कोणाला दिसणार नाही -->
             <input type="password" name="pin" class="form-control" placeholder="••••" maxlength="6" inputmode="numeric" required autocomplete="off">
-            <button type="submit" class="btn">
-                <i class="fa-solid fa-key"></i> Unlock Dashboard
+            <button type="submit" class="btn-submit">
+                <i class="fa-solid fa-lock-open"></i> Unlock Dashboard
             </button>
         </form>
     </div>
