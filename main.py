@@ -8,16 +8,16 @@ from pathlib import Path
 
 app = FastAPI()
 
-# 📂 पाथ फिक्स करण्यासाठी
+# पाथ सेट करणे
 BASE_DIR = Path(__file__).resolve().parent
 TEMPLATES_DIR = BASE_DIR / "templates"
 DB_PATH = BASE_DIR / "database.db"
 
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
+# सुरक्षितता पिन
 SECRET_PIN = "2026" 
 is_authenticated = False
-running_engine_id = 0
 
 def init_db():
     conn = sqlite3.connect(str(DB_PATH))
@@ -46,7 +46,7 @@ async def verify_pin(pin: str = Form(...)):
     if pin == SECRET_PIN:
         is_authenticated = True
         return RedirectResponse(url="/", status_code=303)
-    return RedirectResponse(url="/login?error=Invalid PIN", status_code=303)
+    return RedirectResponse(url="/login?error=चुकीचा पिन", status_code=303)
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
@@ -57,3 +57,9 @@ async def home(request: Request):
     accounts = cursor.fetchall()
     conn.close()
     return templates.TemplateResponse("index.html", {"request": request, "accounts": accounts})
+
+@app.get("/logout")
+async def logout():
+    global is_authenticated
+    is_authenticated = False
+    return RedirectResponse(url="/login", status_code=303)
