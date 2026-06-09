@@ -1,6 +1,5 @@
 fastapi
 uvicorn
-pydantic
-metaapi-cloud-sdk
 jinja2
+metaapi-cloud-sdk
 python-multipart
