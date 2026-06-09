@@ -1,10 +1,20 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Dashboard</title>
-</head>
+<head><title>CopyTrader Dashboard</title></head>
 <body>
     <h1>CopyTrader Dashboard</h1>
-    <p>Welcome to the secure dashboard.</p>
+    
+    <form action="/add" method="post">
+        <input type="text" name="account_name" placeholder="Customer Name" required>
+        <input type="number" name="equity" placeholder="Equity" step="0.01" required>
+        <button type="submit">Add Account</button>
+    </form>
+
+    <table border="1">
+        <tr><th>Name</th><th>Equity</th></tr>
+        {% for acc in accounts %}
+        <tr><td>{{ acc[1] }}</td><td>${{ acc[2] }}</td></tr>
+        {% endfor %}
+    </table>
 </body>
 </html>
