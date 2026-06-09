@@ -2,36 +2,336 @@
 <html lang="mr">
 <head>
     <meta charset="UTF-8">
-    <title>MT5 क्लाउड कॉपी ट्रेडर</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MT5 CopyTrader Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        body { font-family: Arial, sans-serif; background: #f4f6f9; padding: 30px; text-align: center; }
-        .box { max-width: 600px; margin: auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        input, select, button { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
-        button { background: #27ae60; color: white; font-weight: bold; cursor: pointer; border: none; }
-        table { width: 100%; margin-top: 20px; border-collapse: collapse; }
-        th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
-        th { background: #34495e; color: white; }
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #38bdf8;
+            --primary-hover: #0ea5e9;
+            --success: #34d399;
+            --danger: #f87171;
+            --border: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* ---- Header Design ---- */
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeIn 0.8s ease;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #38bdf8, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        header p i {
+            color: var(--success);
+            margin-right: 5px;
+        }
+
+        /* ---- Main Grid ---- */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        @media (min-width: 768px) {
+            .main-grid {
+                grid-template-columns: 350px 1fr;
+            }
+        }
+
+        /* ---- Card Styling ---- */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.6s ease;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+        }
+
+        /* ---- Form Elements ---- */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-control {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--text-main);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+        }
+
+        select.form-control option {
+            background: #1e293b;
+            color: var(--text-main);
+        }
+
+        .btn {
+            width: 100%;
+            background: linear-gradient(to right, #0284c7, #38bdf8);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.5);
+            background: linear-gradient(to right, #0369a1, #0ea5e9);
+        }
+
+        /* ---- Table Styling ---- */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            padding: 16px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.95rem;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Badge Badges */
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .badge-master {
+            background: rgba(52, 211, 153, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+        }
+
+        .badge-follower {
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--primary);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .multiplier-text {
+            font-weight: 600;
+            color: #fbbf24;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.3;
+        }
+
+        /* ---- Animations ---- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
-<div class="box">
-    <h2>📊 MT5 Copy Trading Web App</h2>
-    <form action="/add-account" method="POST">
-        <select name="user_type">
-            <option value="master">Master Account (मास्टर)</option>
-            <option value="follower">Follower Account (फॉलोअर)</option>
-        </select>
-        <input type="text" name="metaapi_account_id" placeholder="MetaAPI Account ID" required>
-        <input type="number" name="multiplier" step="0.1" value="1.0" placeholder="Multiplier" required>
-        <button type="submit">अकाऊंट जोडा</button>
-    </form>
-    <h3>🖥️ जोडलेली अकाऊंट्स</h3>
-    <table>
-        <tr><th>Type</th><th>MetaAPI ID</th><th>Risk</th></tr>
-        {% for account in accounts %}
-        <tr><td>{{ account[1].upper() }}</td><td>{{ account[2] }}</td><td>{{ account[3] }}x</td></tr>
-        {% endfor %}
-    </table>
-</div>
+
+    <div class="container">
+        <header>
+            <h1><i class="fa-solid fa-bolt"></i> MT5 COPYTRADER</h1>
+            <p><i class="fa-solid fa-circle-check"></i> सिस्टीम सर्व्हरवर २४/७ सुरक्षितपणे लाईव्ह आहे</p>
+        </header>
+
+        <div class="main-grid">
+            <div class="card">
+                <div class="card-title">
+                    <i class="fa-solid fa-user-plus"></i> नवीन अकाऊंट जोडा
+                </div>
+                <form action="/add-account" method="post">
+                    <div class="form-group">
+                        <label for="user_type">अकाऊंटचा प्रकार</label>
+                        <select name="user_type" id="user_type" class="form-control" required>
+                            <option value="Master">Master Account (मुख्य)</option>
+                            <option value="Follower">Follower Account (कॉपी)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="metaapi_account_id">MetaAPI Account ID</label>
+                        <input type="text" name="metaapi_account_id" id="metaapi_account_id" class="form-control" placeholder="उदा. 123456" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="multiplier">लॉट साईझ मल्टिप्लायर (Multiplier)</label>
+                        <input type="number" step="0.1" name="multiplier" id="multiplier" class="form-control" value="1.0" min="0.1" required>
+                    </div>
+
+                    <button type="submit" class="btn">
+                        <i class="fa-solid fa-plus"></i> सिस्टीममध्ये जोडा
+                    </button>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <i class="fa-solid fa-list-check"></i> जोडलेली ॲक्टिव्ह अकाऊंट्स
+                </div>
+                
+                <div class="table-responsive">
+                    {% if accounts %}
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>प्रकार</th>
+                                    <th>MetaAPI Account ID</th>
+                                    <th>मल्टिप्लायर</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for account in accounts %}
+                                    <tr>
+                                        <td>#{{ account[0] }}</td>
+                                        <td>
+                                            {% if account[1].lower() == 'master' %}
+                                                <span class="badge badge-master"><i class="fa-solid fa-crown"></i> Master</span>
+                                            {% else %}
+                                                <span class="badge badge-follower"><i class="fa-solid fa-user"></i> Follower</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><strong>{{ account[2] }}</strong></td>
+                                        <td><span class="multiplier-text">{{ account[3] }}x</span></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fa-solid fa-folder-open"></i>
+                            <p>डॅशबोर्डवर अजून कोणतीही अकाऊंट्स जोडलेली नाहीत.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
