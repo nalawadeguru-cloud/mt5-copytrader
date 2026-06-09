@@ -1,11 +1,19 @@
 <!DOCTYPE html>
 <html>
+<head>
+    <title>Login - CopyTrader</title>
+</head>
 <body>
-    <h2>Secure Login</h2>
-    {% if error %}<p style="color:red">{{ error }}</p>{% endif %}
+    <h2>Security Login</h2>
+    
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
     <form action="/verify-pin" method="post">
-        <input type="password" name="pin" placeholder="Enter PIN" required>
-        <button type="submit">Login</button>
+        <label>Enter Security PIN:</label>
+        <input type="password" name="pin" required>
+        <button type="submit">Unlock Dashboard</button>
     </form>
 </body>
 </html>
